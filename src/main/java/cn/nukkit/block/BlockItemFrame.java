@@ -6,12 +6,12 @@ import cn.nukkit.blockentity.BlockEntityItemFrame;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemItemFrame;
 import cn.nukkit.level.Level;
-import cn.nukkit.level.Sound;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.network.protocol.LevelEventPacket;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by Pub4Game on 03.07.2016.
@@ -69,10 +69,10 @@ public class BlockItemFrame extends BlockTransparentMeta {
         	}
             itemOnFrame.setCount(1);
             itemFrame.setItem(itemOnFrame);
-            this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_ADD_ITEM);
+            this.getLevel().addLevelEvent(this, LevelEventPacket.EVENT_SOUND_ITEM_FRAME_ITEM_ADDED);
         } else {
             itemFrame.setItemRotation((itemFrame.getItemRotation() + 1) % 8);
-            this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_ROTATE_ITEM);
+            this.getLevel().addLevelEvent(this, LevelEventPacket.EVENT_SOUND_ITEM_FRAME_ITEM_ROTATED);
         }
         return true;
     }
@@ -98,7 +98,6 @@ public class BlockItemFrame extends BlockTransparentMeta {
             if (frame == null) {
                 return false;
             }
-            this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_PLACE);
             return true;
         }
         return false;
@@ -107,7 +106,7 @@ public class BlockItemFrame extends BlockTransparentMeta {
     @Override
     public boolean onBreak(Item item) {
         this.getLevel().setBlock(this, Block.get(BlockID.AIR), true, true);
-        this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_REMOVE_ITEM);
+        this.getLevel().addLevelEvent(this, LevelEventPacket.EVENT_SOUND_ITEM_FRAME_REMOVED);
         return true;
     }
 
@@ -115,8 +114,7 @@ public class BlockItemFrame extends BlockTransparentMeta {
     public Item[] getDrops(Item item) {
         BlockEntity blockEntity = this.getLevel().getBlockEntity(this);
         BlockEntityItemFrame itemFrame = (BlockEntityItemFrame) blockEntity;
-        int chance = new Random().nextInt(100) + 1;
-        if (itemFrame != null && chance <= (itemFrame.getItemDropChance() * 100)) {
+        if (itemFrame != null && ThreadLocalRandom.current().nextFloat() <= itemFrame.getItemDropChance()) {
             return new Item[]{
                     toItem(), itemFrame.getItem().clone()
             };

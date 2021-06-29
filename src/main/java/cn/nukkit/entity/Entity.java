@@ -12,10 +12,8 @@ import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerInteractEvent.Action;
 import cn.nukkit.event.player.PlayerTeleportEvent;
 import cn.nukkit.item.Item;
-import cn.nukkit.level.EnumLevel;
-import cn.nukkit.level.Level;
-import cn.nukkit.level.Location;
-import cn.nukkit.level.Position;
+import cn.nukkit.item.ItemID;
+import cn.nukkit.level.*;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.*;
 import cn.nukkit.metadata.MetadataValue;
@@ -120,58 +118,69 @@ public abstract class Entity extends Location implements Metadatable {
     public static final int DATA_RIDER_ROTATION_LOCKED = 57; //byte
     public static final int DATA_RIDER_MAX_ROTATION = 58; //float
     public static final int DATA_RIDER_MIN_ROTATION = 59; //float
-    public static final int DATA_AREA_EFFECT_CLOUD_RADIUS = 60; //float
-    public static final int DATA_AREA_EFFECT_CLOUD_WAITING = 61; //int
-    public static final int DATA_AREA_EFFECT_CLOUD_PARTICLE_ID = 62; //int
-    public static final int DATA_SHULKER_PEEK_ID = 63; //int
-    public static final int DATA_SHULKER_ATTACH_FACE = 64; //byte
-    public static final int DATA_SHULKER_ATTACHED = 65; //short
-    public static final int DATA_SHULKER_ATTACH_POS = 66; //block coords
-    public static final int DATA_TRADING_PLAYER_EID = 67; //long
-    public static final int DATA_TRADING_CAREER = 68;
-    public static final int DATA_HAS_COMMAND_BLOCK = 69;
-    public static final int DATA_COMMAND_BLOCK_COMMAND = 70; //string
-    public static final int DATA_COMMAND_BLOCK_LAST_OUTPUT = 71; //string
-    public static final int DATA_COMMAND_BLOCK_TRACK_OUTPUT = 72; //byte
-    public static final int DATA_CONTROLLING_RIDER_SEAT_NUMBER = 73; //byte
-    public static final int DATA_STRENGTH = 74; //int
-    public static final int DATA_MAX_STRENGTH = 75; //int
-    public static final int DATA_SPELL_CASTING_COLOR = 76; //int
-    public static final int DATA_LIMITED_LIFE = 77;
-    public static final int DATA_ARMOR_STAND_POSE_INDEX = 78; // int
-    public static final int DATA_ENDER_CRYSTAL_TIME_OFFSET = 79; // int
-    public static final int DATA_ALWAYS_SHOW_NAMETAG = 80; // byte
-    public static final int DATA_COLOR_2 = 81; // byte
-    public static final int DATA_NAME_AUTHOR = 82;
-    public static final int DATA_SCORE_TAG = 83; //String
-    public static final int DATA_BALLOON_ATTACHED_ENTITY = 84; // long
-    public static final int DATA_PUFFERFISH_SIZE = 85;
-    public static final int DATA_BUBBLE_TIME = 86;
-    public static final int DATA_AGENT = 87;
-    public static final int DATA_SITTING_AMOUNT = 88;
-    public static final int DATA_SITTING_AMOUNT_PREVIOUS = 89;
-    public static final int DATA_EATING_COUNTER = 90;
-    public static final int DATA_FLAGS_EXTENDED = 91;
-    public static final int DATA_LAYING_AMOUNT = 92;
-    public static final int DATA_LAYING_AMOUNT_PREVIOUS = 93;
-    public static final int DATA_DURATION = 94;
-    public static final int DATA_SPAWN_TIME = 95;
-    public static final int DATA_CHANGE_RATE = 96;
-    public static final int DATA_CHANGE_ON_PICKUP = 97;
-    public static final int DATA_PICKUP_COUNT = 98;
-    public static final int DATA_INTERACT_TEXT = 99;
-    public static final int DATA_TRADE_TIER = 100;
-    public static final int DATA_MAX_TRADE_TIER = 101;
-    public static final int DATA_TRADE_EXPERIENCE = 102;
-    public static final int DATA_SKIN_ID = 103; // int ???
-    public static final int DATA_SPAWNING_FRAMES = 104;
-    public static final int DATA_COMMAND_BLOCK_TICK_DELAY = 105;
-    public static final int DATA_COMMAND_BLOCK_EXECUTE_ON_FIRST_TICK = 106;
-    public static final int DATA_AMBIENT_SOUND_INTERVAL = 107;
-    public static final int DATA_AMBIENT_SOUND_EVENT_NAME = 108;
-    public static final int DATA_FALL_DAMAGE_MULTIPLIER = 109;
-    public static final int DATA_NAME_RAW_TEXT = 110;
-    public static final int DATA_CAN_RIDE_TARGET = 111;
+    public static final int DATA_RIDER_ROTATION_OFFSET = 60;
+    public static final int DATA_AREA_EFFECT_CLOUD_RADIUS = 61; //float
+    public static final int DATA_AREA_EFFECT_CLOUD_WAITING = 62; //int
+    public static final int DATA_AREA_EFFECT_CLOUD_PARTICLE_ID = 63; //int
+    public static final int DATA_SHULKER_PEEK_ID = 64; //int
+    public static final int DATA_SHULKER_ATTACH_FACE = 65; //byte
+    public static final int DATA_SHULKER_ATTACHED = 66; //short
+    public static final int DATA_SHULKER_ATTACH_POS = 67; //block coords
+    public static final int DATA_TRADING_PLAYER_EID = 68; //long
+    public static final int DATA_TRADING_CAREER = 69;
+    public static final int DATA_HAS_COMMAND_BLOCK = 70;
+    public static final int DATA_COMMAND_BLOCK_COMMAND = 71; //string
+    public static final int DATA_COMMAND_BLOCK_LAST_OUTPUT = 72; //string
+    public static final int DATA_COMMAND_BLOCK_TRACK_OUTPUT = 73; //byte
+    public static final int DATA_CONTROLLING_RIDER_SEAT_NUMBER = 74; //byte
+    public static final int DATA_STRENGTH = 75; //int
+    public static final int DATA_MAX_STRENGTH = 76; //int
+    public static final int DATA_SPELL_CASTING_COLOR = 77; //int
+    public static final int DATA_LIMITED_LIFE = 78;
+    public static final int DATA_ARMOR_STAND_POSE_INDEX = 79; // int
+    public static final int DATA_ENDER_CRYSTAL_TIME_OFFSET = 80; // int
+    public static final int DATA_ALWAYS_SHOW_NAMETAG = 81; // byte
+    public static final int DATA_COLOR_2 = 82; // byte
+    public static final int DATA_NAME_AUTHOR = 83;
+    public static final int DATA_SCORE_TAG = 84; // String
+    public static final int DATA_BALLOON_ATTACHED_ENTITY = 85; // long
+    public static final int DATA_PUFFERFISH_SIZE = 86;
+    public static final int DATA_BUBBLE_TIME = 87;
+    public static final int DATA_AGENT = 88;
+    public static final int DATA_SITTING_AMOUNT = 89;
+    public static final int DATA_SITTING_AMOUNT_PREVIOUS = 90;
+    public static final int DATA_EATING_COUNTER = 91;
+    public static final int DATA_FLAGS_EXTENDED = 92;
+    public static final int DATA_LAYING_AMOUNT = 93;
+    public static final int DATA_LAYING_AMOUNT_PREVIOUS = 94;
+    public static final int DATA_DURATION = 95;
+    public static final int DATA_SPAWN_TIME = 96;
+    public static final int DATA_CHANGE_RATE = 97;
+    public static final int DATA_CHANGE_ON_PICKUP = 98;
+    public static final int DATA_PICKUP_COUNT = 99;
+    public static final int DATA_INTERACT_TEXT = 100;
+    public static final int DATA_TRADE_TIER = 101;
+    public static final int DATA_MAX_TRADE_TIER = 102;
+    public static final int DATA_TRADE_EXPERIENCE = 103;
+    public static final int DATA_SKIN_ID = 104; // int ???
+    public static final int DATA_SPAWNING_FRAMES = 105;
+    public static final int DATA_COMMAND_BLOCK_TICK_DELAY = 106;
+    public static final int DATA_COMMAND_BLOCK_EXECUTE_ON_FIRST_TICK = 107;
+    public static final int DATA_AMBIENT_SOUND_INTERVAL = 108;
+    public static final int DATA_AMBIENT_SOUND_INTERVAL_RANGE = 109;
+    public static final int DATA_AMBIENT_SOUND_EVENT_NAME = 110;
+    public static final int DATA_FALL_DAMAGE_MULTIPLIER = 111;
+    public static final int DATA_NAME_RAW_TEXT = 112;
+    public static final int DATA_CAN_RIDE_TARGET = 113;
+    public static final int DATA_LOW_TIER_CURED_DISCOUNT = 114;
+    public static final int DATA_HIGH_TIER_CURED_DISCOUNT = 115;
+    public static final int DATA_NEARBY_CURED_DISCOUNT = 116;
+    public static final int DATA_NEARBY_CURED_DISCOUNT_TIMESTAMP = 117;
+    public static final int DATA_HITBOX = 118;
+    public static final int DATA_IS_BUOYANT = 119;
+    public static final int DATA_FREEZING_EFFECT_STRENGTH = 120;
+    public static final int DATA_BUOYANCY_DATA = 121;
+    public static final int DATA_GOAT_HORN_COUNT = 122;
 
     // Flags
     public static final int DATA_FLAG_ONFIRE = 0;
@@ -260,12 +269,16 @@ public abstract class Entity extends Location implements Metadatable {
     public static final int DATA_FLAG_ROARING = 83;
     public static final int DATA_FLAG_DELAYED_ATTACK = 84;
     public static final int DATA_FLAG_IS_AVOIDING_MOBS = 85;
-    public static final int DATA_FLAG_FACING_TARGET_TO_RANGE_ATTACK = 86;
-    public static final int DATA_FLAG_HIDDEN_WHEN_INVISIBLE = 87;
-    public static final int DATA_FLAG_IS_IN_UI = 88;
-    public static final int DATA_FLAG_STALKING = 89;
-    public static final int DATA_FLAG_EMOTING = 90;
-    public static final int DATA_FLAG_CELEBRATING = 91;
+    public static final int DATA_FLAG_IS_AVOIDING_BLOCKS = 86;
+    public static final int DATA_FLAG_FACING_TARGET_TO_RANGE_ATTACK = 87;
+    public static final int DATA_FLAG_HIDDEN_WHEN_INVISIBLE = 88;
+    public static final int DATA_FLAG_IS_IN_UI = 89;
+    public static final int DATA_FLAG_STALKING = 90;
+    public static final int DATA_FLAG_EMOTING = 91;
+    public static final int DATA_FLAG_CELEBRATING = 92;
+    public static final int DATA_FLAG_ADMIRING = 93;
+    public static final int DATA_FLAG_CELEBRATING_SPECIAL = 94;
+    public static final int DATA_FLAG_RAM_ATTACK = 96;
 
     public static long entityCount = 1;
 
@@ -423,7 +436,7 @@ public abstract class Entity extends Location implements Metadatable {
                     continue;
                 }
 
-                effect.setAmplifier(e.getByte("Amplifier")).setDuration(e.getInt("Duration")).setVisible(e.getBoolean("showParticles"));
+                effect.setAmplifier(e.getByte("Amplifier")).setDuration(e.getInt("Duration")).setVisible(e.getBoolean("ShowParticles"));
 
                 this.addEffect(effect);
             }
@@ -1000,7 +1013,7 @@ public abstract class Entity extends Location implements Metadatable {
 
         addEntity.links = new EntityLink[this.passengers.size()];
         for (int i = 0; i < addEntity.links.length; i++) {
-            addEntity.links[i] = new EntityLink(this.getId(), this.passengers.get(i).getId(), i == 0 ? EntityLink.TYPE_RIDER : TYPE_PASSENGER, false);
+            addEntity.links[i] = new EntityLink(this.getId(), this.passengers.get(i).getId(), i == 0 ? EntityLink.TYPE_RIDER : TYPE_PASSENGER, false, false);
         }
 
         return addEntity;
@@ -1081,7 +1094,43 @@ public abstract class Entity extends Location implements Metadatable {
             this.setAbsorption(Math.max(0, this.getAbsorption() + source.getDamage(EntityDamageEvent.DamageModifier.ABSORPTION)));
         }
         setLastDamageCause(source);
-        setHealth(getHealth() - source.getFinalDamage());
+
+        float newHealth = getHealth() - source.getFinalDamage();
+        if (newHealth < 1 && this instanceof Player) {
+            if (source.getCause() != DamageCause.VOID && source.getCause() != DamageCause.SUICIDE) {
+                Player p = (Player) this;
+                boolean totem = false;
+                if (p.getOffhandInventory().getItem(0).getId() == ItemID.TOTEM) {
+                    p.getOffhandInventory().clear(0);
+                    totem = true;
+                } else if (p.getInventory().getItemInHand().getId() == ItemID.TOTEM) {
+                    p.getInventory().clear(p.getInventory().getHeldItemIndex());
+                    totem = true;
+                }
+                if (totem) {
+                    this.getLevel().addLevelEvent(this, LevelEventPacket.EVENT_SOUND_TOTEM);
+                    this.getLevel().addParticleEffect(this, ParticleEffect.TOTEM);
+
+                    this.extinguish();
+                    this.removeAllEffects();
+                    this.setHealth(1);
+
+                    this.addEffect(Effect.getEffect(Effect.REGENERATION).setDuration(800).setAmplifier(1));
+                    this.addEffect(Effect.getEffect(Effect.FIRE_RESISTANCE).setDuration(800));
+                    this.addEffect(Effect.getEffect(Effect.ABSORPTION).setDuration(100).setAmplifier(1));
+
+                    EntityEventPacket pk = new EntityEventPacket();
+                    pk.eid = this.getId();
+                    pk.event = EntityEventPacket.CONSUME_TOTEM;
+                    p.dataPacket(pk);
+
+                    source.setCancelled(true);
+                    return false;
+                }
+            }
+        }
+
+        setHealth(newHealth);
         return true;
     }
 
@@ -1294,7 +1343,7 @@ public abstract class Entity extends Location implements Metadatable {
         if (this.y <= -16 && this.isAlive()) {
             if (this instanceof Player) {
                 Player player = (Player) this;
-                if (player.getGamemode() != 1) this.attack(new EntityDamageEvent(this, DamageCause.VOID, 10));
+                if (!player.isCreative()) this.attack(new EntityDamageEvent(this, DamageCause.VOID, 10));
             } else {
                 this.attack(new EntityDamageEvent(this, DamageCause.VOID, 10));
                 hasUpdate = true;
@@ -1633,12 +1682,20 @@ public abstract class Entity extends Location implements Metadatable {
         }
 
         float damage = (float) Math.floor(fallDistance - 3 - (this.hasEffect(Effect.JUMP) ? this.getEffect(Effect.JUMP).getAmplifier() + 1 : 0));
+
+        Block down = this.level.getBlock(this.floor().down());
+
+        if(down instanceof BlockHayBale) {
+            damage -= (damage * 0.8f);
+        }
+
         if (damage > 0) {
-            this.attack(new EntityDamageEvent(this, DamageCause.FALL, damage));
+            if (!this.isPlayer || level.getGameRules().getBoolean(GameRule.FALL_DAMAGE)) {
+                this.attack(new EntityDamageEvent(this, DamageCause.FALL, damage));
+            }
         }
 
         if (fallDistance > 0.75) {
-            Block down = this.level.getBlock(this.floor().down());
 
             if (down.getId() == Item.FARMLAND) {
                 Event ev;
@@ -2215,10 +2272,12 @@ public abstract class Entity extends Location implements Metadatable {
     }
 
     public void respawnToAll() {
-        for (Player player : this.hasSpawned.values()) {
+        Collection<Player> players = new ArrayList<>(this.hasSpawned.values());
+        this.hasSpawned.clear();
+
+        for (Player player : players) {
             this.spawnTo(player);
         }
-        this.hasSpawned.clear();
     }
 
     public void spawnToAll() {

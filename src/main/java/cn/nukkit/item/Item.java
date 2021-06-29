@@ -6,12 +6,15 @@ import cn.nukkit.block.Block;
 import cn.nukkit.block.BlockID;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.inventory.Fuel;
+import cn.nukkit.item.RuntimeItemMapping.RuntimeEntry;
+import cn.nukkit.item.RuntimeItemMapping.LegacyEntry;
 import cn.nukkit.item.enchantment.Enchantment;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.IntTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
@@ -19,9 +22,16 @@ import cn.nukkit.utils.Binary;
 import cn.nukkit.utils.Config;
 import cn.nukkit.utils.MainLogger;
 import cn.nukkit.utils.Utils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -247,7 +257,7 @@ public class Item implements Cloneable, BlockID, ItemID {
             list[GOLD_HORSE_ARMOR] = ItemHorseArmorGold.class; //418
             list[DIAMOND_HORSE_ARMOR] = ItemHorseArmorDiamond.class; //419
             //TODO: list[LEAD] = ItemLead.class; //420
-            //TODO: list[NAME_TAG] = ItemNameTag.class; //421
+            list[NAME_TAG] = ItemNameTag.class; //421
             list[PRISMARINE_CRYSTALS] = ItemPrismarineCrystals.class; //422
             list[RAW_MUTTON] = ItemMuttonRaw.class; //423
             list[COOKED_MUTTON] = ItemMuttonCooked.class; //424
@@ -288,6 +298,8 @@ public class Item implements Cloneable, BlockID, ItemID {
             
             list[TURTLE_SHELL] = ItemTurtleShell.class; //469
 
+            list[CROSSBOW] = ItemCrossbow.class; //471
+
             list[SWEET_BERRIES] = ItemSweetBerries.class; //477
 
             list[RECORD_11] = ItemRecord11.class;
@@ -305,6 +317,23 @@ public class Item implements Cloneable, BlockID, ItemID {
 
             list[SHIELD] = ItemShield.class; //513
 
+            list[HONEYCOMB] = ItemHoneycomb.class; //736
+            list[HONEY_BOTTLE] = ItemHoneyBottle.class; //737
+
+            list[NETHERITE_INGOT] = ItemIngotNetherite.class; //742
+            list[NETHERITE_SWORD] = ItemSwordNetherite.class; //743
+            list[NETHERITE_SHOVEL] = ItemShovelNetherite.class; //744
+            list[NETHERITE_PICKAXE] = ItemPickaxeNetherite.class; //745
+            list[NETHERITE_AXE] = ItemAxeNetherite.class; //746
+            list[NETHERITE_HOE] = ItemHoeNetherite.class; //747
+            list[NETHERITE_HELMET] = ItemHelmetNetherite.class; //748
+            list[NETHERITE_CHESTPLATE] = ItemChestplateNetherite.class; //749
+            list[NETHERITE_LEGGINGS] = ItemLeggingsNetherite.class; //750
+            list[NETHERITE_BOOTS] = ItemBootsNetherite.class; //751
+            list[NETHERITE_SCRAP] = ItemScrapNetherite.class; //752
+
+            list[RECORD_PIGSTEP] = ItemRecordPigstep.class; //759
+
             for (int i = 0; i < 256; ++i) {
                 if (Block.list[i] != null) {
                     list[i] = Block.list[i];
@@ -317,19 +346,21 @@ public class Item implements Cloneable, BlockID, ItemID {
 
     private static final ArrayList<Item> creative = new ArrayList<>();
 
-    @SuppressWarnings("unchecked")
     private static void initCreativeItems() {
         clearCreativeItems();
 
-        Config config = new Config(Config.YAML);
-        config.load(Server.class.getClassLoader().getResourceAsStream("creativeitems.json"));
-        List<Map> list = config.getMapList("items");
+        JsonArray itemsArray;
+        try (InputStream stream = Server.class.getClassLoader().getResourceAsStream("creative_items.json")) {
+            itemsArray = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("items");
+        } catch (Exception e) {
+            throw new AssertionError("Error loading required block states!");
+        }
 
-        for (Map map : list) {
-            try {
-                addCreativeItem(fromJson(map));
-            } catch (Exception e) {
-                MainLogger.getLogger().logException(e);
+        for (JsonElement element : itemsArray) {
+            Item item = RuntimeItems.parseCreativeItem(element.getAsJsonObject(), true);
+            if (item != null && !item.getName().equals(UNKNOWN_STR)) {
+                // Add only implemented items
+                addCreativeItem(item);
             }
         }
     }
@@ -422,7 +453,7 @@ public class Item implements Cloneable, BlockID, ItemID {
 
         Pattern integerPattern = Pattern.compile("^[1-9]\\d*$");
         if (integerPattern.matcher(b[0]).matches()) {
-            id = Integer.valueOf(b[0]);
+            id = Integer.parseInt(b[0]);
         } else {
             try {
                 id = Item.class.getField(b[0].toUpperCase()).getInt(null);
@@ -431,12 +462,16 @@ public class Item implements Cloneable, BlockID, ItemID {
         }
 
         id = id & 0xFFFF;
-        if (b.length != 1) meta = Integer.valueOf(b[1]) & 0xFFFF;
+        if (b.length != 1) meta = Integer.parseInt(b[1]) & 0xFFFF;
 
         return get(id, meta);
     }
 
     public static Item fromJson(Map<String, Object> data) {
+        return fromJson(data, false);
+    }
+
+    private static Item fromJson(Map<String, Object> data, boolean ignoreUnsupported) {
         String nbt = (String) data.get("nbt_b64");
         byte[] nbtBytes;
         if (nbt != null) {
@@ -450,7 +485,10 @@ public class Item implements Cloneable, BlockID, ItemID {
             }
         }
 
-        return get(Utils.toInt(data.get("id")), Utils.toInt(data.getOrDefault("damage", 0)), Utils.toInt(data.getOrDefault("count", 1)), nbtBytes);
+        int id = Utils.toInt(data.get("id"));
+        if (ignoreUnsupported && id < 0) return null;
+
+        return get(id, Utils.toInt(data.getOrDefault("damage", 0)), Utils.toInt(data.getOrDefault("count", 1)), nbtBytes);
     }
 
     public static Item[] fromStringMultiple(String str) {
@@ -635,6 +673,37 @@ public class Item implements Cloneable, BlockID, ItemID {
         }
 
         return enchantments.toArray(new Enchantment[0]);
+    }
+
+    public boolean hasEnchantment(int id) {
+        return this.getEnchantment(id) != null;
+    }
+
+    public int getRepairCost() {
+        if (this.hasCompoundTag()) {
+            CompoundTag tag = this.getNamedTag();
+            if (tag.contains("RepairCost")) {
+                Tag repairCost = tag.get("RepairCost");
+                if (repairCost instanceof IntTag) {
+                    return ((IntTag) repairCost).data;
+                }
+            }
+        }
+        return 0;
+    }
+
+    public Item setRepairCost(int cost) {
+        if (cost <= 0 && this.hasCompoundTag()) {
+            return this.setNamedTag(this.getNamedTag().remove("RepairCost"));
+        }
+
+        CompoundTag tag;
+        if (!this.hasCompoundTag()) {
+            tag = new CompoundTag();
+        } else {
+            tag = this.getNamedTag();
+        }
+        return this.setNamedTag(tag.putInt("RepairCost", cost));
     }
 
     public boolean hasCustomName() {
@@ -833,6 +902,10 @@ public class Item implements Cloneable, BlockID, ItemID {
         } else {
             return Block.get(BlockID.AIR);
         }
+    }
+
+    public Block getBlockUnsafe() {
+        return this.block;
     }
 
     public int getId() {
@@ -1041,5 +1114,13 @@ public class Item implements Cloneable, BlockID, ItemID {
         } catch (CloneNotSupportedException e) {
             return null;
         }
+    }
+
+    public final RuntimeEntry getRuntimeEntry() {
+        return RuntimeItems.getMapping().toRuntime(this.getId(), this.getDamage());
+    }
+
+    public final int getNetworkId() {
+        return this.getRuntimeEntry().getRuntimeId();
     }
 }

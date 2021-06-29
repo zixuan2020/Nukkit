@@ -157,7 +157,7 @@ public class BlockRedstoneWire extends BlockFlowable {
             return maxStrength;
         } else {
             int strength = this.level.getBlockDataAt(pos.getFloorX(), pos.getFloorY(), pos.getFloorZ());
-            return strength > maxStrength ? strength : maxStrength;
+            return Math.max(strength, maxStrength);
         }
     }
 
@@ -220,7 +220,7 @@ public class BlockRedstoneWire extends BlockFlowable {
     public boolean canBePlacedOn(Vector3 v) {
         Block b = this.level.getBlock(v);
 
-        return b.isSolid() && !b.isTransparent() && b.getId() != Block.GLOWSTONE;
+        return (b.isSolid() && !b.isTransparent() && b.getId() != Block.GLOWSTONE) || b.getId() == HOPPER_BLOCK;
     }
 
     public int getStrongPower(BlockFace side) {
